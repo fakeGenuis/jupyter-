@@ -1,0 +1,48 @@
+# -*- eval: (auto-fill-mode 1); -*-
+#+TITLE: jupyter+
+#+AUTHOR: fakeGenius
+#+DESCRIPTION: More extensions for emacs jupyter package
+#+created: April 01, 2024
+
+A extension package for [[https://github.com/emacs-jupyter/jupyter][jupyter]], which rewrite some functions in
+=jupyter-org-extensions.el= with more modern packages (like =transient= and
+=consult= etc).
+
+* Intro
+1. Why not an extension to org mode?
+
+   Keybindings in this package do actually not restrict to, but it invoke many
+   useful functions in =jupyter=. And if one need key menus to navigate between
+   blocks, it will be much possible in jupyter session.
+
+* Features
+1. transient navigation panel
+2. jump src block with =consult=
+
+* TODOs
+1. [ ] display ansi color of src block result
+2. [ ] better =jupyter-org--annotate=
+3. [ ] better src block header editing
+4. [ ] also kill header line when =jupyter-org-kill-block-and-results=
+5. [ ] add grouping and narrowing to =jupyter-org-consult-block=
+   maybe by src block language and ~:result~ keyword
+6. [ ] highlight current selected
+7. [ ] center after navigation
+
+* Installation
+with doom emacs
+#+begin_src emacs-lisp :tangle $DOOMDIR/packages.el
+(package! jupyter+
+  :recipe (:host github
+           :repo "fakeGenius/jupyter+"))
+#+end_src
+
+* Configuration
+#+begin_src emacs-lisp
+(use-package! jupyter+
+  :commands jupyter-org-transient
+  (map! :map jupyter-org-interaction-mode-map
+        :n "\\" #'jupyter-org-transient))
+#+end_src
+
+* Issues
