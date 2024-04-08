@@ -29,6 +29,7 @@
 (require 'ob-jupyter)
 (require 'consult)
 
+(declare-function evil-insert "evil-commands" (count &optional vcount skip-empty-lines))
 (transient-define-prefix jupyter-org-transient ()
   "Prefix with descriptions specified with slots."
   :transient-suffix t
@@ -58,8 +59,18 @@
     ;; since we always have point in the head of src block
     ;; ("s" "split" jupyter-org-split-src-block)
     ("u" "undo" undo)
-    ("o" "add below" (lambda () (interactive) (jupyter-org-insert-src-block t current-prefix-arg)))
-    ("O" "add above" (lambda () (interactive) (jupyter-org-insert-src-block nil current-prefix-arg)))]
+    ("o" "add below"
+     (lambda () (interactive)
+       (jupyter-org-insert-src-block t current-prefix-arg)
+       (when (featurep 'evil)
+         (evil-insert 1)))
+     :transient nil)
+    ("O" "add above"
+     (lambda () (interactive)
+       (jupyter-org-insert-src-block nil current-prefix-arg)
+       (when (featurep 'evil)
+         (evil-insert 1)))
+     :transient nil)]
 
    ["Misc"
     ("c" "clear" org-babel-remove-result)
