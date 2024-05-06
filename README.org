@@ -20,11 +20,11 @@ A extension package for [[https://github.com/emacs-jupyter/jupyter][jupyter]], w
 2. jump src block with =consult=
 
 * TODOs
-1. [ ] display ansi color of src block result
 2. [ ] better =jupyter-org--annotate=
 3. [ ] better src block header editing
 4. [ ] also kill header line when =jupyter-org-kill-block-and-results=
 5. [ ] add grouping and narrowing to =jupyter-org-consult-block=
+2. [X] display ansi color of src block result
    maybe by src block language and ~:result~ keyword
 6. [ ] highlight current selected
 7. [ ] center after navigation
