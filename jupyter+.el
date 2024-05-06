@@ -174,6 +174,21 @@ PM is the point marker of EXECUTABLE."
                    :lookup (lambda (cand all &rest _) (cdr (assoc cand all)))
                    :state (consult--jump-state))))
 
+;; From https://emacs.stackexchange.com/a/63562
+;;;###autoload
+(defun jupyter-org--ansi-results ()
+  "Render ansi src block results."
+  (when-let ((beg (org-babel-where-is-src-block-result nil nil)))
+    (save-excursion
+      (goto-char beg)
+      (when (looking-at org-babel-result-regexp)
+        (let ((end (org-babel-result-end))
+              (ansi-color-context-region nil))
+          (ansi-color-apply-on-region beg end))))))
+
+;;;###autoload
+(add-hook 'org-babel-after-execute-hook 'jupyter-org--ansi-results)
+
 (provide 'jupyter+)
 
 ;;; jupyter+.el ends here
