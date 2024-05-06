@@ -35,6 +35,7 @@
   :transient-suffix t
   ["Transient for jupyter org src blocks\n"
    ["Execution"
+    ("I" "interrupt" jupyter-org-interrupt-kernel)
     ("S" "shutdown" jupyter-kill-repl-buffer)
     ("<return>" "current" org-ctrl-c-ctrl-c)
     ("C-<return>" "current to next" jupyter-org-execute-and-next-block)
@@ -49,7 +50,8 @@
     ("g" "consult" jupyter-org-consult-block)
     ("J" "next heading" org-next-visible-heading)
     ("K" "previous heading" org-previous-visible-heading)
-    ("G" "consult heading" consult-org-heading)]
+    ("G" "consult heading" consult-org-heading)
+    ("TAB" "cycle" org-cycle)]
 
    ["Edit"
     ("d" "kill" jupyter-org-kill-block-and-results)
@@ -76,8 +78,7 @@
    ["Misc"
     ("c" "clear" org-babel-remove-result)
     ("h" "edit header" jupyter-org-edit-header)
-    ("t" "toggle results" org-babel-hide-result-toggle)
-    ("i" "interrupt" jupyter-org-interrupt-kernel)]])
+    ("t" "toggle results" org-babel-hide-result-toggle)]])
 
 (defun jupyter-repl-buffer-rx (sn)
   "Regular expression of a jupyter repl buffer.
