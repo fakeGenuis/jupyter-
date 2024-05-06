@@ -35,6 +35,7 @@
   :transient-suffix t
   ["Transient for jupyter org src blocks\n"
    ["Execution"
+    ("S" "shutdown" jupyter-kill-repl-buffer)
     ("<return>" "current" org-ctrl-c-ctrl-c)
     ("C-<return>" "current to next" jupyter-org-execute-and-next-block)
     ("M-<return>" "subtree to point" jupyter-org-execute-subtree)
@@ -77,6 +78,26 @@
     ("h" "edit header" jupyter-org-edit-header)
     ("t" "toggle results" org-babel-hide-result-toggle)
     ("i" "interrupt" jupyter-org-interrupt-kernel)]])
+
+(defun jupyter-repl-buffer-rx (sn)
+  "Regular expression of a jupyter repl buffer.
+SN is the value of header-args `:session'."
+  (rx line-start "*jupyter-repl" (* anychar) (literal sn) "*" line-end))
+
+(defun jupyter-kill-repl-buffer ()
+  "Kill repl buffer of current jupyter src block.
+`jupyter-repl-shutdown-kernel' only shutdown zmq sockets."
+  (interactive)
+  (let* ((sn (alist-get :session (nth 2 (org-babel-get-src-block-info))))
+         (mbs (match-buffers (jupyter-repl-buffer-rx sn))))
+    (cond
+     ((length= mbs 0) (message "No active REPL buffer matched!"))
+     ((length= mbs 1) (kill-buffer (cl-first mbs)))
+     ((length> mbs 1)
+      (kill-buffer
+       (completing-read
+        "REPL buffer:"
+        (mapcar (lambda (buf) (format "%s" buf)) mbs)))))))
 
 (advice-add 'jupyter-org-kill-block-and-results
             :after (lambda ()
