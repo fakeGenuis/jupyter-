@@ -64,17 +64,9 @@
     ;; since we always have point in the head of src block
     ;; ("s" "split" jupyter-org-split-src-block)
     ("u" "undo" undo)
-    ("o" "add below"
-     (lambda () (interactive)
-       (jupyter-org-insert-src-block t current-prefix-arg)
-       (when (featurep 'evil)
-         (evil-insert 1)))
+    ("o" "add below" jupyter-org-add-src-block-below
      :transient nil)
-    ("O" "add above"
-     (lambda () (interactive)
-       (jupyter-org-insert-src-block nil current-prefix-arg)
-       (when (featurep 'evil)
-         (evil-insert 1)))
+    ("O" "add above" jupyter-org-add-src-block-above
      :transient nil)]
 
    ["Misc"
@@ -162,6 +154,25 @@ Include `#+CALL:' besides src block.
 With optional prefix argument ARG, jump backward ARG many source blocks."
   (interactive "p")
   (org-next-block arg t (jupyter-org--executable-block-regexp)))
+
+(defun jupyter-org-add-src-block-below ()
+  "Add an empty src block below closest src block."
+  (interactive)
+  (unless (org-in-src-block-p)
+    (jupyter-org-previous-executable))
+  (jupyter-org-insert-src-block t)
+  (when (featurep 'evil)
+    (evil-insert 1)))
+
+(defun jupyter-org-add-src-block-above ()
+  "Add an empty src block above closest src block."
+  (interactive)
+  (unless (org-in-src-block-p)
+    (jupyter-org-next-executable))
+  (jupyter-org-insert-src-block nil)
+  (when (featurep 'evil)
+    (evil-insert 1)))
+
 (defun jupyter-org--annotate (s)
   "Annotate a preview of current EXECUTABLE.
 S is the whole EXECUTABLE string,
