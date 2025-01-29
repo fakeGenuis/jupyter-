@@ -43,9 +43,11 @@
     ("S-<return>" "restart/block" jupyter-org-restart-kernel-execute-block)]
 
    ["Navigate"
-    ("j" "next" org-babel-next-src-block)
+    ;; ("j" "next" org-babel-next-src-block)
+    ("j" "next" jupyter-org-next-executable)
     ;; ("J" "next busy" jupyte-org-next-busy-src-block)
-    ("k" "previous" org-babel-previous-src-block)
+    ;; ("k" "previous" org-babel-previous-src-block)
+    ("k" "previous" jupyter-org-previous-executable)
     ;; ("K" "previous busy" jupyter-org-previous-busy-src-block)
     ("g" "consult" jupyter-org-consult-block)
     ("J" "next heading" org-next-visible-heading)
@@ -145,6 +147,21 @@ SN is the value of header-args `:session'."
   (rx (or (regexp org-babel-src-block-regexp)
           (regexp jupyter-org--block-caller-regexp))))
 
+;;;###autoload
+(defun jupyter-org-next-executable (&optional arg)
+  "Jump to next org executable.
+Include `#+CALL:' besides src block.
+With optional prefix argument ARG, jump forward ARG many source blocks."
+  (interactive "p")
+  (org-next-block arg nil (jupyter-org--executable-block-regexp)))
+
+;;;###autoload
+(defun jupyter-org-previous-executable (&optional arg)
+  "Jump to previous org executable.
+Include `#+CALL:' besides src block.
+With optional prefix argument ARG, jump backward ARG many source blocks."
+  (interactive "p")
+  (org-next-block arg t (jupyter-org--executable-block-regexp)))
 (defun jupyter-org--annotate (s)
   "Annotate a preview of current EXECUTABLE.
 S is the whole EXECUTABLE string,
