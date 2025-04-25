@@ -5,8 +5,8 @@
 #+created: April 01, 2024
 
 A extension package for [[https://github.com/emacs-jupyter/jupyter][jupyter]], which rewrite some functions in
-=jupyter-org-extensions.el= with more modern packages (like =transient= and
-=consult= etc).
+=jupyter-org-extensions.el= with more modern packages (like =transient=, =corfu=
+and =consult= etc).
 
 * Intro
 1. Why not an extension to org mode?
@@ -18,6 +18,9 @@ A extension package for [[https://github.com/emacs-jupyter/jupyter][jupyter]], w
 * Features
 1. transient navigation panel
 2. jump src block with =consult=
+3. compatibility to =corfu= completion backend (no =company= dependence)
+   1) symbol type in =:company-kind=
+   2) possible busy completion support
 
 * TODOs
 2. [ ] better =jupyter-org--annotate=
@@ -44,5 +47,27 @@ with doom emacs
   (map! :map jupyter-org-interaction-mode-map
         :n "\\" #'jupyter-org-transient))
 #+end_src
+
+* Development
+** with =corfu=
+what keys are contained in =_jupyter_types_experimental=?
+- start / end
+- text :: the matched candidates
+- signature :: sth. like =(foo arg-a arg-b)=
+  the way of function be called
+- type :: symbol type of current match
+  can be function / variable etc.
+
+Keys of =plist= returned by =completion-at-point= (=company-xxx=)
+- doc-buffer
+- docsig
+- location
+
+** completion-at-point
+doc buffer
+[[https://github.com/minad/corfu/issues/333][minad/corfu#333 How to add documentation command for corfu-info-documentation...]]
+
+** =complete_reply= api
+[[https://github.com/jupyter/jupyter_client/issues/51][jupyter/jupyter_client#51 complete_reply message spec changes: types, values,...]]
 
 * Issues

@@ -221,6 +221,135 @@ PM is the point marker of EXECUTABLE."
 ;;;###autoload
 (add-hook 'org-babel-after-execute-hook 'jupyter-org--ansi-results)
 
+(defun jupyter+-completion-at-point ()
+  "Function to add to `completion-at-point-functions'."
+  (let ((prefix (jupyter-completion-prefix)))
+    (when (and
+           prefix jupyter-current-client
+           ;; Don't try to send completion requests when the kernel is busy
+           ;; since it doesn't appear that kernels respond to these requests
+           ;; when the kernel is busy, at least the Julia kernel doesn't.
+           ;;
+           ;; FIXME: Maybe this is kernel dependent
+           (or (not (jupyter-kernel-busy-p jupyter-current-client))
+               (plist-get (jupyter-kernel-info jupyter-current-client) :busy_completion)))
+      ;; NOTE: removed company idle
+      (when (consp prefix)
+        (setq prefix (car prefix)))
+      (when (jupyter-completion-prefetch-p prefix)
+        (setq jupyter-completion-cache nil)
+        (jupyter-completion-prefetch
+         (lambda (msg) (setq jupyter-completion-cache
+                             (list 'fetched prefix msg)))))
+      (list
+       (- (point) (length prefix)) (point)
+       (completion-table-dynamic
+        (lambda (_)
+          (when (null jupyter-completion-cache)
+            (sit-for 0.1))
+          (when (eq (car jupyter-completion-cache) 'fetched)
+            (jupyter-with-message-content (nth 2 jupyter-completion-cache)
+                (status matches metadata)
+              (setq jupyter-completion-cache
+                    (cons (nth 1 jupyter-completion-cache)
+                          (when (equal status "ok")
+                            (jupyter+-completion-construct-candidates
+                             matches metadata))))))
+          (cdr jupyter-completion-cache)))
+       :exit-function
+       #'jupyter-completion--post-completion
+       :company-kind
+       (lambda (arg)
+         (intern (get-text-property 0 'type arg)))
+       :company-location
+       (lambda (arg) (get-text-property 0 'location arg))
+       ;; :annotation-function
+       ;; (lambda (arg) (get-text-property 0 'annot arg))
+       :company-docsig
+       (lambda (arg) (get-text-property 0 'docsig arg))
+       :company-doc-buffer
+       #'jupyter+-company-doc-buffer))))
+
+(defun jupyter+-completion-construct-candidates (matches metadata)
+  "Construct candidates for completion.
+MATCHES are the completion matches returned by the kernel,
+METADATA is any extra data associated with MATCHES that was
+supplied by the kernel."
+  (let (buf)
+    (with-temp-buffer
+      (cl-loop
+       for i from 0 below (length matches)
+       for match = (aref matches i)
+       do
+       ;; NOTE not add function itself, respect backend's 'docsig
+       ;; (put-text-property 0 1 'docsig match match)
+       (cond
+        ;; TODO maybe a variable (list of function) here to support language
+        ;; specific handle
+        ((string-match jupyter-completion-argument-regexp match)
+         (let* ((str match)
+                (args-str (match-string 1 str))
+                (end (match-end 1))
+                (path (match-string 2 str))
+                (line (string-to-number (match-string 3 str)))
+                (snippet (progn
+                           (erase-buffer)
+                           (insert args-str)
+                           (goto-char (point-min))
+                           (jupyter-completion--make-arg-snippet
+                            (jupyter-completion--arg-extract)))))
+           (setq match (aset matches i (substring match 0 end)))
+           (put-text-property 0 1 'snippet snippet match)
+           (put-text-property 0 1 'location (cons path line) match)))
+        ;; TODO: This is specific to the results that
+        ;; the python kernel returns, make a support
+        ;; function?
+        ((string-match-p "\\." match)
+         (aset matches i (car (last (split-string match "\\."))))))))
+    ;; When a type is supplied add it as an annotation
+    (when-let* ((types (plist-get metadata :_jupyter_types_experimental))
+                (lengths (mapcar #'length matches)))
+      (cl-loop
+       for i from 0 below
+       ;; For safety, ensure the lengths are the same which is
+       ;; usually the case, but sometimes a kernel may not return
+       ;; lists of the same length.  Seen for example in IJulia.
+       (min (length matches) (length types))
+       ;; These are typically in the same order.
+       for match = (aref matches i)
+       for meta = (aref types i)
+       do (let* ((type (plist-get meta :type))
+                 (sig (plist-get meta :signature)))
+            (put-text-property 0 1 'docsig sig match)
+            (put-text-property 0 1 'type type match))))
+    ;; FIXME To get rid of this conversion use `json-array-type', be
+    ;; sure to change places where it is assumed that there are
+    ;; vectors.
+    (append matches nil)))
+
+(defun jupyter+-company-doc-buffer (code)
+  "Inspect CODE string and return doc buffer."
+  (let ((buf (jupyter+-make-doc-buffer)))
+    (jupyter-inspect code 1 buf)
+    (with-current-buffer buf
+      (when (> (point-max) (point-min))
+        (let ((inhibit-read-only t))
+          ;; TODO use text properties to highlight?
+          (remove-text-properties
+           (point-min) (point-max) '(read-only))
+          (font-lock-mode 1)
+          (goto-char (point-min))
+          (current-buffer))))))
+
+(defun jupyter+-make-doc-buffer ()
+  "Generate / reuse a buffer for doc display."
+  (with-current-buffer (get-buffer-create "*jupyter-doc*")
+    (erase-buffer)
+    (fundamental-mode)
+    (current-buffer)))
+
+(advice-add 'jupyter-completion-at-point :override #'jupyter+-completion-at-point)
+
 (provide 'jupyter+)
 
 ;;; jupyter+.el ends here
