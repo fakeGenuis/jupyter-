@@ -29,7 +29,10 @@
 (require 'ob-jupyter)
 (require 'consult)
 
+(declare-function org-next-block "org" (arg &optional backward block-regexp))
 (declare-function evil-insert "evil-commands" (count &optional vcount skip-empty-lines))
+(declare-function org-in-src-block-p "org" (&optional INSIDE ELEMENT))
+
 (transient-define-prefix jupyter-org-transient ()
   "Prefix with descriptions specified with slots."
   :transient-suffix t
