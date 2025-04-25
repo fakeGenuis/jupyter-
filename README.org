@@ -23,13 +23,14 @@ and =consult= etc).
    2) possible busy completion support
 
 * TODOs
-2. [ ] better =jupyter-org--annotate=
-3. [ ] better src block header editing
-4. [ ] also kill header line when =jupyter-org-kill-block-and-results=
-5. [ ] add grouping and narrowing to =jupyter-org-consult-block=
+1. [ ] navigate through ~#+CALL:~ block
+   There is a type checker inside [[fn:org-next-block]] that block my implement
 2. [X] display ansi color of src block result
+3. [ ] better =jupyter-org--annotate=
+4. [ ] better src block header editing
+5. [ ] add grouping and narrowing to =jupyter-org-consult-block=
    maybe by src block language and ~:result~ keyword
-6. [ ] highlight current selected
+6. [ ] highlight current selected block
 7. [ ] center after navigation
 
 * Installation
@@ -45,7 +46,7 @@ with doom emacs
 (use-package! jupyter+
   :commands jupyter-org-transient
   (map! :map jupyter-org-interaction-mode-map
-        :n "\\" #'jupyter-org-transient))
+        :n ";" #'jupyter-org-transient))
 #+end_src
 
 * Development
