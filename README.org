@@ -1,5 +1,5 @@
 # -*- eval: (auto-fill-mode 1); -*-
-#+TITLE: jupyter+
+#+TITLE: jupyter-ext
 #+AUTHOR: fakeGenius
 #+DESCRIPTION: More extensions for emacs jupyter package
 #+created: April 01, 2024
@@ -36,9 +36,9 @@ and =consult= etc).
 * Installation
 with doom emacs
 #+begin_src emacs-lisp :tangle $DOOMDIR/packages.el
-(package! jupyter+
+(package! jupyter-ext
   :recipe (:host github
-           :repo "fakeGenius/jupyter+"))
+           :repo "fakeGenius/jupyter-ext"))
 #+end_src
 
 * Configuration
