@@ -22,6 +22,26 @@ and =consult= etc).
    1) symbol type in =:company-kind=
    2) possible busy completion support
 
+* Installation
+with doom emacs
+#+begin_src emacs-lisp :tangle $DOOMDIR/packages.el
+(package! jupyter-ext
+  :recipe (:host github
+           :repo "fakeGenuis/jupyter-ext"))
+#+end_src
+
+* Configuration
+#+begin_src emacs-lisp
+(use-package! jupyter-ext
+  :commands jupyter-org-transient
+  :init
+  (map! :map jupyter-org-interaction-mode-map
+        :n ";" #'jupyter-org-transient)
+  :config
+  ;; A tweaked completion at point function for corfu
+  (advice-add 'jupyter-completion-at-point :override #'jupyter-ext-completion-at-point))
+#+end_src
+
 * TODOs
 1. [ ] navigate through ~#+CALL:~ block
    There is a type checker inside [[fn:org-next-block]] that block my implement
@@ -32,22 +52,6 @@ and =consult= etc).
    maybe by src block language and ~:result~ keyword
 6. [ ] highlight current selected block
 7. [ ] center after navigation
-
-* Installation
-with doom emacs
-#+begin_src emacs-lisp :tangle $DOOMDIR/packages.el
-(package! jupyter-ext
-  :recipe (:host github
-           :repo "fakeGenius/jupyter-ext"))
-#+end_src
-
-* Configuration
-#+begin_src emacs-lisp
-(use-package! jupyter+
-  :commands jupyter-org-transient
-  (map! :map jupyter-org-interaction-mode-map
-        :n ";" #'jupyter-org-transient))
-#+end_src
 
 * Development
 ** with =corfu=
