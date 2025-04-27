@@ -1,4 +1,4 @@
-;;; jupyter+.el --- More jupyter org extensions -*- lexical-binding: t; -*-
+;;; jupyter-ext.el --- An extension for emacs-jupyter -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2024  fakeGenius
 
@@ -221,7 +221,7 @@ PM is the point marker of EXECUTABLE."
 ;;;###autoload
 (add-hook 'org-babel-after-execute-hook 'jupyter-org--ansi-results)
 
-(defun jupyter+-completion-at-point ()
+(defun jupyter-ext-completion-at-point ()
   "Function to add to `completion-at-point-functions'."
   (let ((prefix (jupyter-completion-prefix)))
     (when (and
@@ -253,7 +253,7 @@ PM is the point marker of EXECUTABLE."
               (setq jupyter-completion-cache
                     (cons (nth 1 jupyter-completion-cache)
                           (when (equal status "ok")
-                            (jupyter+-completion-construct-candidates
+                            (jupyter-ext-completion-construct-candidates
                              matches metadata))))))
           (cdr jupyter-completion-cache)))
        :exit-function
@@ -268,9 +268,9 @@ PM is the point marker of EXECUTABLE."
        :company-docsig
        (lambda (arg) (get-text-property 0 'docsig arg))
        :company-doc-buffer
-       #'jupyter+-company-doc-buffer))))
+       #'jupyter-ext-company-doc-buffer))))
 
-(defun jupyter+-completion-construct-candidates (matches metadata)
+(defun jupyter-ext-completion-construct-candidates (matches metadata)
   "Construct candidates for completion.
 MATCHES are the completion matches returned by the kernel,
 METADATA is any extra data associated with MATCHES that was
@@ -327,9 +327,9 @@ supplied by the kernel."
     ;; vectors.
     (append matches nil)))
 
-(defun jupyter+-company-doc-buffer (code)
+(defun jupyter-ext-company-doc-buffer (code)
   "Inspect CODE string and return doc buffer."
-  (let ((buf (jupyter+-make-doc-buffer)))
+  (let ((buf (jupyter-ext-make-doc-buffer)))
     (jupyter-inspect code 1 buf)
     (with-current-buffer buf
       (when (> (point-max) (point-min))
@@ -341,15 +341,13 @@ supplied by the kernel."
           (goto-char (point-min))
           (current-buffer))))))
 
-(defun jupyter+-make-doc-buffer ()
+(defun jupyter-ext-make-doc-buffer ()
   "Generate / reuse a buffer for doc display."
   (with-current-buffer (get-buffer-create "*jupyter-doc*")
     (erase-buffer)
     (fundamental-mode)
     (current-buffer)))
 
-(advice-add 'jupyter-completion-at-point :override #'jupyter+-completion-at-point)
+(provide 'jupyter-ext)
 
-(provide 'jupyter+)
-
-;;; jupyter+.el ends here
+;;; jupyter-ext.el ends here
